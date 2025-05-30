@@ -1,14 +1,26 @@
 from flask import Flask
+from flask_socketio import SocketIO
 from app.config import Config
 from app.models import db
 from app.routes import api
+from app.services.weather_service import WeatherService
+from app.websockets.weather_websocket import WeatherWebSocket
 
+# Instâncias globais
+socketio = SocketIO(cors_allowed_origins="*")
+weather_service = None
+weather_websocket = None
 
 def create_app():
+    global weather_service, weather_websocket
+    
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Inicialize DB
+    # Inicializar SocketIO
+    socketio.init_app(app)
+    
+    # Inicializar DB
     db.init_app(app)
 
     # Routes
@@ -17,9 +29,20 @@ def create_app():
     # Create all Tables
     with app.app_context():
         db.create_all()
-    #teste
-    # Register error handlers, if any
-    # app.register_error_handler(404, not_found_error)  
-    # app.register_error_handler(500, internal_server_error)
-    # Register other blueprints or extensions as needed
+        
+        # Inicializar serviços
+        weather_service = WeatherService()
+        weather_websocket = WeatherWebSocket(socketio, weather_service)
+        
+        # Iniciar coleta periódica (a cada 30 minutos)
+        weather_service.start_periodic_collection(interval_minutes=30)
+
     return app
+
+def get_weather_service():
+    """Obter instância do serviço meteorológico"""
+    return weather_service
+
+def get_socketio():
+    """Obter instância do SocketIO"""
+    return socketio
