@@ -1,9 +1,8 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime, timedelta
 from app.models import db
 from app.models.alert import VineyardAlert as AlertModel, AlertTypeEnum, AlertLevelEnum
 from app.services.vineyard_analyzer import VineyardAlert, AlertType, AlertLevel
-
 
 class AlertManager:
     """

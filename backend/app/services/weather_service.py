@@ -5,6 +5,7 @@ from app.models import db, Weather
 import threading
 import time
 from typing import Dict, List, Optional
+from flask import current_app
 
 class WeatherService:
     """
@@ -12,11 +13,12 @@ class WeatherService:
     e armazenar na base de dados.
     """
     
-    def __init__(self):
+    def __init__(self, app=None):
         self.api_key = os.getenv('OPENWEATHER_API_KEY')
         self.base_url = "http://api.openweathermap.org/data/2.5/weather"
         self.is_collecting = False
         self._observers = []
+        self.app = app
         
         # Cidades portuguesas para vindimas
         self.cities = [
@@ -204,7 +206,11 @@ class WeatherService:
             while self.is_collecting:
                 try:
                     print(f"Iniciando coleta de dados - {datetime.now()}")
-                    self.collect_all_cities_data()
+                    
+                    # IMPORTANTE: Usar o contexto da aplicação na thread
+                    with self.app.app_context():
+                        self.collect_all_cities_data()
+                    
                     print(f"Coleta concluída - {datetime.now()}")
                     
                     # Aguardar próximo ciclo

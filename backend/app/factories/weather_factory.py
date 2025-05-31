@@ -74,12 +74,14 @@ class WeatherDataFactory:
     def _weighted_weather_choice(self, city):
         """Generate weather with location-appropriate weights"""
         weights = {
-            "PT": [0.05, 0.05, 0.1, 0.15, 0.01, 0.05, 0.3, 0.15, 0.08, 0.04, 0.02]  # Portugal: lots of sun & some rain
+            "PT": [0.05, 0.05, 0.1, 0.15, 0.01, 0.05, 0.3, 0.15, 0.08, 0.04, 0.02],  # Portugal: lots of sun & some rain
+            "US": [0.1, 0.1, 0.15, 0.1, 0.05, 0.1, 0.2, 0.1, 0.05, 0.03, 0.02],     # USA: varied weather
+            "DEFAULT": [0.05, 0.05, 0.1, 0.15, 0.01, 0.05, 0.3, 0.15, 0.08, 0.04, 0.02]  # Default weights
         }
 
-        country_weights = weights.get(city["country"], weights["US"])
+        country_weights = weights.get(city["country"], weights["DEFAULT"])
         return random.choices(self.weather_types, weights=country_weights, k=1)[0]
-
+    
     def _generate_main_data(self, weather_type, city):
         """Generate realistic main weather data based on location and weather type"""
         base_temp = self._get_base_temp(city)
